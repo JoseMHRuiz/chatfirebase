@@ -1,23 +1,15 @@
-import React, { useRef, useState } from "react";
-import "./App.css";
+import React, { useRef, useState } from 'react';
+import './App.css';
 
-import firebase from "firebase/app";
-import "firebase/firestore";
-import "firebase/auth";
+import firebase from 'firebase/app';
+import 'firebase/firestore';
+import 'firebase/auth';
+import firebaseDevApiConfig from './FirebaseAPI';
 
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useCollectionData } from "react-firebase-hooks/firestore";
-
-firebase.initializeApp({
-  apiKey: "AIzaSyBVglwBgWNd1oLl8DMFKqIPLl7stPiRnW8",
-  authDomain: "chatfirebase-e4c74.firebaseapp.com",
-  databaseURL: "https://chatfirebase-e4c74.firebaseio.com",
-  projectId: "chatfirebase-e4c74",
-  storageBucket: "chatfirebase-e4c74.appspot.com",
-  messagingSenderId: "68035664343",
-  appId: "1:68035664343:web:492dec2667604723889392",
-  measurementId: "G-10K0WNTZBF",
-});
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
+console.log(firebaseDevApiConfig);
+firebase.initializeApp(firebaseDevApiConfig);
 
 const auth = firebase.auth();
 const firestore = firebase.firestore();
@@ -25,8 +17,11 @@ const firestore = firebase.firestore();
 function App() {
   const [user] = useAuthState(auth);
   return (
-    <div className="App">
-      <header></header>
+    <div className='App'>
+      <header>
+        <h1>React Firebase Chat</h1>
+        <SignOut />
+      </header>
       <section>{user ? <ChatRoom /> : <SignIn />}</section>
     </div>
   );
@@ -43,17 +38,23 @@ function SignIn() {
 
 function SignOut() {
   return (
-    auth.currenUser && <button onClick={() => auth.signOut()}>Sign Out</button>
+    auth.currentUser && (
+      <button className='sign-out' onClick={() => auth.signOut()}>
+        Sign Out
+      </button>
+    )
   );
 }
 
 function ChatRoom() {
-  const messagesRef = firestore.collection("messages");
-  const query = messagesRef.orderBy("createdAt").limit(25);
+  const dummy = useRef();
 
-  const [messages] = useCollectionData(query, { idField: "id" });
+  const messagesRef = firestore.collection('messages');
+  const query = messagesRef.orderBy('createdAt').limit(25);
+
+  const [messages] = useCollectionData(query, { idField: 'id' });
   console.log(messages);
-  const [formValue, setFormValue] = useState("");
+  const [formValue, setFormValue] = useState('');
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -66,20 +67,22 @@ function ChatRoom() {
       uid,
       photoURL,
     });
-    setFormValue("");
+    setFormValue('');
+    dummy.current.scrollIntoView({ behavior: 'smooth' });
   };
   return (
     <>
-      <div>
+      <main>
         {messages &&
           messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
-      </div>
+        <div ref={dummy}></div>
+      </main>
       <form onSubmit={sendMessage}>
         <input
           value={formValue}
           onChange={(e) => setFormValue(e.target.value)}
         />
-        <button type="submit">Send</button>
+        <button type='submit'>Send</button>
       </form>
     </>
   );
@@ -88,11 +91,11 @@ function ChatRoom() {
 function ChatMessage(props) {
   console.log(props);
   const { text, uid, photoURL } = props.message;
-  const messageClass = uid === auth.currentUser.uid ? "sent" : "recived";
+  const messageClass = uid === auth.currentUser.uid ? 'sent' : 'recived';
 
   return (
     <div className={`message ${messageClass}`}>
-      <img src={photoURL} />
+      <img src={photoURL} alt='img' />
       <p>{text}</p>;
     </div>
   );

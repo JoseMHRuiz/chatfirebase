@@ -10,6 +10,7 @@
 
 # production
 /build
+FirebaseAPi.js
 
 # misc
 .DS_Store
